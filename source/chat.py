@@ -47,10 +47,10 @@ Si la réponse n'existe PAS dans le contexte :
 5. Si la question est vague, demande une précision.
 6. Répond de manière claire, organisée, pédagogique.
 
-** QUESTION **
+==== QUESTION ====
 {question}
 
-** RÉPONSE **
+==== RÉPONSE ====
 """
     return prompt
 
@@ -67,7 +67,7 @@ def chat():
             break
         
         conv_history.append({"role": "utilisateur", "content": user_input})
-
+        
         context = retrieve_context(user_input)
 
         prompt = build_prompt(context, conv_history, user_input)

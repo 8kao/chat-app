@@ -2,13 +2,11 @@ import os
 
 def load_files(base_path):
 
-    allowed_extensions = [".txt", ".md", ".cpp", ".hpp", ".c", ".h"]
     files = []
 
     for root, dirs, filenames in os.walk(base_path):
         for f in filenames:
-            if any(f.lower().endswith(ext) for ext in allowed_extensions):
-                files.append(os.path.join(root, f))
+            files.append(os.path.join(root, f))
     return files
 
 def read_files(path):
@@ -39,7 +37,7 @@ def chunk_text(text, chunk_size=500, overlap=100):
 def build_chunks(base_path):
 
     # 1 : liste des fichiers
-    # 2 :lecture
+    # 2 : lecture
     # 3 : chunking
     # return une liste : [{"source": file, "content": chunk}, ...]
 

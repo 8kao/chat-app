@@ -10,14 +10,20 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 chroma_client = chromadb.PersistentClient(path="../data/vector_db")
 collection = chroma_client.get_collection("corpus_collection")
+embedding_cache = {}
 
 def retrieve_context(query, k=8, min_relevance=0.7):
     
-    #embedding de la question
-    q_embed = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=query
-    ).data[0].embedding
+    #on check si la question a déjà été posée pour eviter l'embedding inutile
+    if query in embedding_cache:
+        q_embed = embedding_cache[query]
+    else:
+        q_embed = client.embeddings.create(
+            model="text-embedding-3-small",
+            input=query
+        ).data[0].embedding
+        
+        embedding_cache[query] = q_embed
 
     results = collection.query(
         query_embeddings=[q_embed],
@@ -38,7 +44,7 @@ def retrieve_context(query, k=8, min_relevance=0.7):
     seen = set()
     unique = []
 
-    #on évite d'avoir des dups
+    #on évite de renvoyer plusieurs fois le meme chunk au LLM
     for doc, meta, dist in filtered:
         src = meta.get("source", "")
         if src not in seen:
