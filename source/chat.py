@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from retriever import retrieve_context
 from decompose import decompose_query
+from summarize_history import summarize_history
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -12,7 +13,7 @@ class bcolors:
     OKCYAN = '\033[96m'
     OKGREEN = '\033[92m'
 
-def build_prompt(context_items, conv_history, question):
+def build_prompt(context_items, conv_summary, conv_history_raw, question):
 
     #contexte
     context_text = ""
@@ -24,10 +25,15 @@ def build_prompt(context_items, conv_history, question):
 
     #on garde l'historique de la conv pour l'ajouter au prompt
     history_text = ""
-    for turn in conv_history:
-        role = turn["role"]
-        msg = turn["content"]
-        history_text += f"{role.upper()}: {msg}\n"
+
+    if conv_summary:
+        history_text += f"--- RÉSUMÉ ---\n{conv_summary}\n"
+
+    # derniers échanges (2 max)
+    history_text += "\n--- DERNIERS ÉCHANGES ---\n"
+    for m in conv_history_raw:
+        history_text += f"{m['role'].upper()}: {m['content']}\n"
+
 
     prompt = f"""
 Tu es un assistant expert et rigoureux. Tu utilises EXCLUSIVEMENT les informations
@@ -62,10 +68,11 @@ Si la réponse n'existe PAS dans le contexte :
 
 def chat():
 
-    conv_history = []
+    conv_history_raw = []
+    conv_summary = ""
+    history_counter =0
 
     print(f"\n{bcolors.OKGREEN}Assistant >>{bcolors.WHITE} Comment puis-je vous aider ?\n(Tapez 'exit' pour quitter le chat). ")
-
     while True:
 
         user_input = input(f"\n{bcolors.OKCYAN}Vous >>{bcolors.WHITE} ")
@@ -73,8 +80,8 @@ def chat():
         if user_input.lower() == "exit":
             break
         
-        conv_history.append({"role": "utilisateur", "content": user_input})
-        
+        conv_history_raw.append({"role": "utilisateur", "content": user_input})
+        history_counter += 1
         #on decoupe la question pour savoir si il y a plusieurs taches et on les traite une par une (ex: explique-moi comment fonctionne geometry ET compare avec physics)
         subtasks = decompose_query(user_input)
         contexts = []
@@ -82,14 +89,39 @@ def chat():
             context = retrieve_context(task, k=5)
             contexts.append({"task": task, "ctx": context})
 
-        prompt = build_prompt(context, conv_history, user_input)
+        #tous les 10 tours on fait appel à un llm pour résumer l'historique de la conversation afin d'alléger le prompt envoyé au llm chat 
+        if (history_counter >= 10):
+            full_history_text = ""
+            for m in conv_history_raw:
+                full_history_text += f"{m['role']}: {m['content']}\n"
+
+            # resumer
+            new_summary = summarize_history(full_history_text)
+
+            # ajouter dans le resume global
+            if conv_summary == "":
+                conv_summary = new_summary
+            else:
+                conv_summary += "\n" + new_summary
+
+            #garder seulement les 2 derniers messages
+            conv_history_raw = conv_history_raw[-2:]
+
+            history_counter = 0
+
+            prompt = build_prompt(
+                context_items=contexts,
+                conv_summary=conv_summary,
+                conv_history_raw=conv_history_raw,
+                question=user_input
+            )
 
         llm_response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
         ).choices[0].message.content
 
-        conv_history.append({"role": "assistant", "content": llm_response})
+        conv_history_raw.append({"role": "assistant", "content": llm_response})
         
         print(f"\n{bcolors.OKGREEN}Assistant >>{bcolors.WHITE} ", llm_response)
 
