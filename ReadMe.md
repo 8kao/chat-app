@@ -1,6 +1,6 @@
 # Context-Aware Chatbot
 
-Chatbot RAG (Retrieval-Augmented Generation) utilisant :
+### Chatbot RAG (Retrieval-Augmented Generation) utilisant :
 
 - ChromaDB
 
@@ -9,6 +9,8 @@ Chatbot RAG (Retrieval-Augmented Generation) utilisant :
 - Chunking simple
 
 - Embedding cache
+
+- Conversation memory
 
 - Query decomposition (multi-step RAG)
 
@@ -20,7 +22,7 @@ Chatbot RAG (Retrieval-Augmented Generation) utilisant :
 
 ## Fonctionnalités
 
-1. Ingestion de documents
+### 1. Ingestion de documents
 
 - Lecture automatique des fichiers dans data/docs_corpus
 
@@ -31,12 +33,12 @@ Chatbot RAG (Retrieval-Augmented Generation) utilisant :
 - Insertion en batch dans ChromaDB (pour éviter les erreurs de taille)
 
 
-2. Embedding Cache
+### 2. Embedding Cache
 
 - Les embeddings des questions sont mis en cache -> si une question revient : pas de nouvel appel OpenAI
 
 
-3. Retrieval basé sur la similarité
+### 3. Retrieval basé sur la similarité
 
 - Embedding de la requête
 
@@ -51,7 +53,7 @@ Chatbot RAG (Retrieval-Augmented Generation) utilisant :
 - Réduction à k documents les plus pertinents
 
 
-4. Query Decomposition (Multi-step RAG)
+### 4. Query Decomposition (Multi-step RAG)
 
 Inspiré des techniques utilisées par Anthropic.
 
@@ -70,19 +72,21 @@ Le système :
 - Demande au LLM de fusionner les informations
 
 
-5. Conversation Memory
+### 5. Conversation Memory
 
 L’historique est incorporé dans le prompt -> permet de garder le fil d’une conversation longue
+Tous les 10 messages, l'historique de la conversation est envoyé à un autre LLM pour résumer et ne garder que les informations
+importantes afin d'alléger le prompt donné à l'assistant.
 
 ---
 
 ## Installation 
 
-1. Installation des dépendances
+### 1. Installation des dépendances
 
 `pip install -r requirements.txt`
 
-2. Ajouter la clé API OpenAI
+### 2. Ajouter la clé API OpenAI
 
 Créer `.env` :
 
@@ -95,6 +99,7 @@ Créer `.env` :
 Places tes docs ou garde ceux déjà en place dans `data/docs_corpus`
 
 Lance :
+
 `python source/embed.py`
 
 ---
