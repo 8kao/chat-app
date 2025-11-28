@@ -90,6 +90,8 @@ importantes afin d'alléger le prompt donné à l'assistant.
 
 Créer `.env` :
 
+`cp .env.example .env`
+
 `OPENAI_API_KEY="votre_cle"`
 
 ---
