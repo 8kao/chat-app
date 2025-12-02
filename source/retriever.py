@@ -19,7 +19,8 @@ def retrieve_context(query, k=8, min_relevance=0.7):
     else:
         q_embed = client.embeddings.create(
             model="text-embedding-3-small",
-            input=query
+            input=query,
+            dimensions=512
         ).data[0].embedding
         
         embedding_cache[query] = q_embed
