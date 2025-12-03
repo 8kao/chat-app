@@ -98,11 +98,13 @@ Créer `.env` :
 
 ## Ingestion
 
-Places tes docs ou garde ceux déjà en place dans `data/docs_corpus`
+Places ton corpus de docs ou garde ceux déjà en place dans data/docs_corpus
 
 Lance :
 
-`python source/embed.py`
+python source/embed.py
+
+>Note : si vous souhaitez recréer une base vectorielle, il vous suffit de supprimer la base dans le fichier data/vector_db puis de relancer python source/embed.py
 
 ---
 

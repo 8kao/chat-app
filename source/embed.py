@@ -3,26 +3,18 @@ from split import build_chunks
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+from datetime import datetime
 
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+date = {datetime.now().strftime("%d-%m-%Y_%H:%M")}
 
-chroma_client = chromadb.PersistentClient(path="../data/vector_db")
-
-def embed_text(text):
-    # text-embedding-3-small produces 1,536 dimensions by default,
-    # this is why we set the dimensions to 512 for faster search and retrieval
-    response = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=text,
-        dimensions=512
-    )
-
-    return response.data[0].embedding
+chroma_client = chromadb.PersistentClient(path=f"data/vector_db/")
 
 def build_vector_db(chunks, batch_size=50):
 
+    # at each run, a new db is created since we cannot reset or delete it
     # create the vector database in chromadb
     # fill the content of the lists
     # then embed in batches of 50 because otherwise it takes too long to send chunks one by one to openai
