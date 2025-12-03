@@ -105,6 +105,7 @@ Lance :
 python source/embed.py
 
 >Note : si vous souhaitez recréer une base vectorielle, il vous suffit de supprimer la base dans le fichier data/vector_db puis de relancer python source/embed.py
+>/!\ Attention à ne pas supprimer le .gitignore dans le dossier
 
 ---
 
